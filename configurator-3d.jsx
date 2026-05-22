@@ -114,15 +114,15 @@ function Configurator() {
   const price = useMemo(() => priceCalc(config), [config]);
 
   return (
-    <div className="grid grid-cols-[1.05fr_minmax(360px,460px)] gap-0 h-full min-h-[640px]">
+    <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_minmax(360px,460px)] gap-0 h-full lg:min-h-[640px]">
       {/* ── Left: visualizer stage ─────────────────────────────────────── */}
-      <div className="relative stage-bg border-r border-[var(--line)] flex items-center justify-center overflow-hidden min-h-[560px]">
+      <div className="relative stage-bg border-b lg:border-b-0 lg:border-r border-[var(--line)] flex items-center justify-center overflow-hidden min-h-[440px] sm:min-h-[520px] lg:min-h-[560px]">
         {/* Stage frame */}
-        <div className="absolute inset-6 border border-[var(--line)] pointer-events-none"></div>
-        <div className="absolute top-8 left-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">IdealProposal · Atelier</div>
-        <div className="absolute top-8 right-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">Vista Frontal</div>
-        <div className="absolute bottom-8 left-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">No.°{("000" + Math.round(config.carat*100)).slice(-4)}-{config.shape.slice(0,2).toUpperCase()}</div>
-        <div className="absolute bottom-8 right-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">Render en tiempo real</div>
+        <div className="absolute inset-3 sm:inset-6 border border-[var(--line)] pointer-events-none"></div>
+        <div className="hidden sm:block absolute top-8 left-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">IdealProposal · Atelier</div>
+        <div className="hidden sm:block absolute top-8 right-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">Vista Frontal</div>
+        <div className="hidden sm:block absolute bottom-8 left-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">No.°{("000" + Math.round(config.carat*100)).slice(-4)}-{config.shape.slice(0,2).toUpperCase()}</div>
+        <div className="hidden sm:block absolute bottom-8 right-8 text-[10px] tracking-luxe uppercase text-[var(--muted)]">Render en tiempo real</div>
 
         <div className="flex flex-col items-stretch gap-2 w-full h-full justify-center anim-in" key={`${config.montura}`}>
           <ModelViewer config={config} />
@@ -135,7 +135,7 @@ function Configurator() {
       </div>
 
       {/* ── Right: panel ───────────────────────────────────────────────── */}
-      <div className="overflow-y-auto no-scrollbar p-8 lg:p-10">
+      <div className="overflow-y-auto no-scrollbar p-5 sm:p-8 lg:p-10">
         <div className="max-w-md mx-auto space-y-9">
 
           {/* Step 1 — Montura */}
@@ -422,7 +422,7 @@ function ModelViewer({ config }) {
   };
 
   return (
-    <div className="grid grid-cols-2 items-stretch gap-3 w-full px-8 py-4" style={{ height: "min(440px, 60vh)" }}>
+    <div className="grid grid-cols-2 items-stretch gap-2 sm:gap-3 w-full px-3 sm:px-8 py-3 sm:py-4" style={{ height: "min(440px, 60vh)" }}>
       {/* Main ring */}
       <div className="relative h-full flex flex-col overflow-hidden">
         <div className="relative flex-1 min-h-0">
