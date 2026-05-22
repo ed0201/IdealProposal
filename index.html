@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IdealProposal — Configurador de Anillos</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+  :root {
+    --bone: #f6f3ee;
+    --bone-2: #efeae1;
+    --ink: #15110d;
+    --ink-2: #3a3128;
+    --muted: #7a6e60;
+    --line: #d9d1c2;
+    --gold: #b08a4a;
+    --gold-soft: #c9a766;
+  }
+  html, body, #root { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bone);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'ss01', 'ss02';
+    -webkit-font-smoothing: antialiased;
+  }
+  .font-display { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 400; letter-spacing: -0.01em; }
+  .tracking-luxe { letter-spacing: 0.32em; }
+  .tracking-wider2 { letter-spacing: 0.16em; }
+
+  /* hide scrollbars chrome */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Subtle hairline */
+  .hr-line { background: linear-gradient(to right, transparent, var(--line), transparent); height: 1px; }
+
+  /* Sparkle keyframes for gems */
+  @keyframes shimmer {
+    0%, 100% { opacity: .65; transform: translate(-50%, -50%) rotate(0deg); }
+    50% { opacity: 1; transform: translate(-50%, -50%) rotate(180deg); }
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(8px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .anim-in { animation: floatUp .5s ease-out both; }
+
+  /* Backdrop for the ring stage */
+  .stage-bg {
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 62%, rgba(0,0,0,0.10), transparent 70%),
+      radial-gradient(circle at 50% 35%, #fffdf8 0%, #f3ede1 55%, #e8dfce 100%);
+  }
+
+  /* Selected chip */
+  .chip {
+    border: 1px solid var(--line);
+    background: #fffdf8;
+    transition: all .18s ease;
+  }
+  .chip:hover { border-color: #bba98a; }
+  .chip[data-active="true"] {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 1px var(--ink) inset;
+  }
+
+  /* Range styling */
+  input[type=range].lux {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 2px; background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range].lux::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 999px;
+    background: #fffdf8; border: 1px solid var(--ink);
+    box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    cursor: pointer;
+  }
+  input[type=range].lux::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 999px;
+    background: #fffdf8; border: 1px solid var(--ink);
+    box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    cursor: pointer;
+  }
+
+  /* Color-grade slider track (D->Z) */
+  input[type=range].color-grade {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 10px; border-radius: 999px; outline: none;
+    background: linear-gradient(to right,
+      #ffffff 0%, #fafaf3 25%, #fbf6dd 50%, #f6e9a8 75%, #efd668 100%);
+    border: 1px solid var(--line);
+  }
+  input[type=range].color-grade::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 999px;
+    background: #fff; border: 2px solid var(--ink);
+    cursor: pointer;
+  }
+
+  /* Tab underline */
+  .tab-btn { position: relative; }
+  .tab-btn[data-active="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--ink);
+  }
+
+  details.lux > summary { list-style: none; cursor: pointer; }
+  details.lux > summary::-webkit-details-marker { display: none; }
+  details.lux .chev { transition: transform .25s ease; }
+  details.lux[open] .chev { transform: rotate(45deg); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ring.jsx"></script>
+<script type="text/babel" src="configurator-3d.jsx"></script>
+<script type="text/babel" src="education.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
