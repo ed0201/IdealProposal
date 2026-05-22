@@ -260,12 +260,12 @@ function Configurator() {
 
               <div className="h-px bg-[var(--line)] my-3"></div>
 
-              <div className="flex items-end justify-between">
-                <div>
+              <div className="flex items-end justify-between gap-2">
+                <div className="min-w-0">
                   <div className="text-[10px] tracking-luxe uppercase text-[var(--muted)]">Total estimado</div>
                   <div className="text-[10px] tracking-wider2 uppercase text-[var(--muted)]">Precio estimado de mercado</div>
                 </div>
-                <div className="font-display text-4xl tabular-nums leading-none text-[var(--ink)]">
+                <div className="font-display text-3xl sm:text-4xl tabular-nums leading-none text-[var(--ink)] whitespace-nowrap">
                   {fmt(price.total)}
                 </div>
               </div>

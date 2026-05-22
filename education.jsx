@@ -1,6 +1,6 @@
 // Education tab — 4Cs interactive modules + metals table.
 
-const { useState: useStateEdu } = React;
+const { useState: useStateEdu, useEffect: useEffectEdu } = React;
 
 const COLOR_GRADES = [
   // D-F: incoloro · G-J: casi incoloro · K-M: leve tonalidad · N-R: muy leve amarillo · S-Z: tonalidad amarilla
@@ -55,7 +55,7 @@ function SectionHeading({ kicker, title, subtitle }) {
   return (
     <div className="mb-6">
       <div className="text-[10px] tracking-luxe uppercase text-[var(--muted)] mb-2">{kicker}</div>
-      <h2 className="font-display text-4xl text-[var(--ink)]">{title}</h2>
+      <h2 className="font-display text-3xl sm:text-4xl text-[var(--ink)]">{title}</h2>
       {subtitle && <p className="text-[var(--ink-2)] mt-2 max-w-prose">{subtitle}</p>}
     </div>
   );
@@ -65,16 +65,26 @@ function SectionHeading({ kicker, title, subtitle }) {
 function CaratCard() {
   const samples = [0.5, 0.75, 1.0, 1.5, 2.0, 3.0];
   const [active, setActive] = useStateEdu(1.0);
-  const px = (ct) => 26 + ct * 22; // visual scale
+  // Two scales — smaller on mobile, fuller on desktop
+  const [px, setPx] = useStateEdu(() => (ct) => 26 + ct * 22);
+  useEffectEdu(() => {
+    const compute = () => {
+      const isSm = window.matchMedia("(max-width: 640px)").matches;
+      setPx(() => (ct) => (isSm ? 18 + ct * 12 : 26 + ct * 22));
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
   return (
     <Card kicker="C — Carat" title="Quilates · El peso de la gema">
       <p className="text-[14px] leading-relaxed text-[var(--ink-2)] mb-5">
         Un quilate equivale a <em>0.2 gramos</em>. El precio crece de forma exponencial: un diamante de 2 ct cuesta mucho más que dos de 1 ct, porque las gemas grandes son significativamente más escasas.
       </p>
-      <div className="flex items-end justify-between gap-2 mb-3">
+      <div className="flex items-end justify-between gap-1 sm:gap-2 mb-3 overflow-x-auto no-scrollbar">
         {samples.map(ct => (
           <button key={ct} onClick={() => setActive(ct)}
-            className="flex flex-col items-center gap-2 group">
+            className="flex flex-col items-center gap-2 group shrink-0">
             <div
               className="rounded-full transition-all duration-200"
               style={{
@@ -85,7 +95,7 @@ function CaratCard() {
                   : "0 3px 10px rgba(0,0,0,0.12)",
               }}
             />
-            <span className={`text-[11px] tabular-nums ${active===ct?"text-[var(--ink)]":"text-[var(--muted)]"}`}>{ct.toFixed(2)} ct</span>
+            <span className={`text-[10px] sm:text-[11px] tabular-nums ${active===ct?"text-[var(--ink)]":"text-[var(--muted)]"}`}>{ct.toFixed(2)} ct</span>
           </button>
         ))}
       </div>
@@ -151,7 +161,7 @@ function ClarityCard() {
       <p className="text-[14px] leading-relaxed text-[var(--ink-2)] mb-5">
         Una escala que mide la presencia de inclusiones (imperfecciones internas) y manchas (externas). La mayoría son invisibles a simple vista a partir de <strong>SI1</strong>.
       </p>
-      <div className="grid grid-cols-11 gap-1 mb-4">
+      <div className="grid grid-cols-6 sm:grid-cols-11 gap-1 mb-4">
         {CLARITY_GRADES.map(c => (
           <button key={c.id} onClick={() => setActive(c.id)}
             data-active={active === c.id}
@@ -201,14 +211,14 @@ function CutCard() {
 function Card({ kicker, title, children }) {
   return (
     <details className="lux bg-[#fffdf8] border border-[var(--line)]" open={kicker === "C — Carat"}>
-      <summary className="flex items-center justify-between p-6 group">
-        <div>
+      <summary className="flex items-center justify-between p-4 sm:p-6 group gap-3">
+        <div className="min-w-0">
           <div className="text-[10px] tracking-luxe uppercase text-[var(--muted)] mb-1">{kicker}</div>
-          <h3 className="font-display text-2xl text-[var(--ink)]">{title}</h3>
+          <h3 className="font-display text-xl sm:text-2xl text-[var(--ink)]">{title}</h3>
         </div>
-        <span className="chev text-2xl font-display text-[var(--ink)] leading-none">+</span>
+        <span className="chev text-2xl font-display text-[var(--ink)] leading-none shrink-0">+</span>
       </summary>
-      <div className="px-6 pb-6 pt-0">{children}</div>
+      <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">{children}</div>
     </details>
   );
 }
@@ -243,34 +253,65 @@ function MetalsTable() {
       price: "$$$$",
     },
   ];
+  const cols = [
+    { key: "composition",  label: "Pureza" },
+    { key: "hardness",     label: "Dureza" },
+    { key: "durability",   label: "Durabilidad" },
+    { key: "maintenance",  label: "Mantenimiento" },
+    { key: "hypo",         label: "Hipoalergénico" },
+    { key: "price",        label: "Precio" },
+  ];
   return (
-    <div className="bg-[#fffdf8] border border-[var(--line)] overflow-hidden">
-      <div className="grid grid-cols-[1.1fr_1fr_1fr_1.4fr_1.2fr_1.3fr_0.6fr] text-[10px] tracking-luxe uppercase text-[var(--muted)] border-b border-[var(--line)]">
-        {["Metal","Pureza","Dureza","Durabilidad","Mantenimiento","Hipoalergénico","Precio"].map(h => (
-          <div key={h} className="px-4 py-3">{h}</div>
+    <>
+      {/* Desktop / tablet — wide table */}
+      <div className="hidden md:block bg-[#fffdf8] border border-[var(--line)] overflow-hidden">
+        <div className="grid grid-cols-[1.1fr_1fr_1fr_1.4fr_1.2fr_1.3fr_0.6fr] text-[10px] tracking-luxe uppercase text-[var(--muted)] border-b border-[var(--line)]">
+          {["Metal","Pureza","Dureza","Durabilidad","Mantenimiento","Hipoalergénico","Precio"].map(h => (
+            <div key={h} className="px-4 py-3">{h}</div>
+          ))}
+        </div>
+        {rows.map((r) => (
+          <div key={r.metal}
+            className="grid grid-cols-[1.1fr_1fr_1fr_1.4fr_1.2fr_1.3fr_0.6fr] text-[13px] border-b border-[var(--line)] last:border-b-0"
+          >
+            <div className="px-4 py-5 font-display text-xl text-[var(--ink)]">{r.metal}</div>
+            <div className="px-4 py-5 text-[var(--ink-2)]">{r.composition}</div>
+            <div className="px-4 py-5 text-[var(--ink-2)]">{r.hardness}</div>
+            <div className="px-4 py-5 text-[var(--ink-2)]">{r.durability}</div>
+            <div className="px-4 py-5 text-[var(--ink-2)]">{r.maintenance}</div>
+            <div className="px-4 py-5 text-[var(--ink-2)]">{r.hypo}</div>
+            <div className="px-4 py-5 font-display text-lg tabular-nums text-[var(--ink)]">{r.price}</div>
+          </div>
         ))}
       </div>
-      {rows.map((r, i) => (
-        <div key={r.metal}
-          className="grid grid-cols-[1.1fr_1fr_1fr_1.4fr_1.2fr_1.3fr_0.6fr] text-[13px] border-b border-[var(--line)] last:border-b-0"
-        >
-          <div className="px-4 py-5 font-display text-xl text-[var(--ink)]">{r.metal}</div>
-          <div className="px-4 py-5 text-[var(--ink-2)]">{r.composition}</div>
-          <div className="px-4 py-5 text-[var(--ink-2)]">{r.hardness}</div>
-          <div className="px-4 py-5 text-[var(--ink-2)]">{r.durability}</div>
-          <div className="px-4 py-5 text-[var(--ink-2)]">{r.maintenance}</div>
-          <div className="px-4 py-5 text-[var(--ink-2)]">{r.hypo}</div>
-          <div className="px-4 py-5 font-display text-lg tabular-nums text-[var(--ink)]">{r.price}</div>
-        </div>
-      ))}
-    </div>
+
+      {/* Mobile — stacked cards */}
+      <div className="md:hidden space-y-4">
+        {rows.map((r) => (
+          <div key={r.metal} className="bg-[#fffdf8] border border-[var(--line)] p-5">
+            <div className="flex items-baseline justify-between mb-3">
+              <h4 className="font-display text-2xl text-[var(--ink)]">{r.metal}</h4>
+              <span className="font-display text-lg tabular-nums text-[var(--ink)]">{r.price}</span>
+            </div>
+            <dl className="space-y-2">
+              {cols.slice(0, 5).map(c => (
+                <div key={c.key} className="grid grid-cols-[110px_1fr] gap-3 text-[13px]">
+                  <dt className="text-[10px] tracking-luxe uppercase text-[var(--muted)] pt-0.5">{c.label}</dt>
+                  <dd className="text-[var(--ink-2)]">{r[c.key]}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
 function Education() {
   return (
     <div className="overflow-y-auto no-scrollbar h-full">
-      <div className="max-w-5xl mx-auto px-8 lg:px-12 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
 
         <SectionHeading
           kicker="Aprende antes de comprar"
